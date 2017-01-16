@@ -8,48 +8,49 @@ open ITunesDecoder.Types
 open System.Xml.Linq
 open System
 
-let path = Path.Combine( __SOURCE_DIRECTORY__, "library.xml")
+let path = Path.Combine(__SOURCE_DIRECTORY__, "Sample.xml")
 
-
-let loadDocument path =
-    use xml = File.OpenText(path);
-    let doc = XDocument.Load(xml);
+let loadDocument path = 
+    use xml = File.OpenText(path)
+    let doc = XDocument.Load(xml)
     doc
-    
-let getRoot(doc: XDocument) =
-    doc.Elements()
-    |> Seq.head
+
+let getRoot (doc : XDocument) = doc.Elements() |> Seq.head
+
+let parseElement (element : XElement) = 
+    match element.Name.LocalName with
+    | "integer" -> PList.Integer(int64 (element.Value))
+    | "string" -> PList.String element.Value
+    | "date" -> PList.Date(element.Value |> DateTime.Parse)
+    | "data" -> PList.Data element.Value
+    | n -> failwith (sprintf "Unknown key %s" n)
+
+
+let rec parseDict result (element : XElement) = 
+    let list = element.Elements() |> List.ofSeq
+    match list with
+    | x :: y :: tail when x.Name.LocalName = "key" -> Dict (dict ((x.Value, parseElement (y)) :: result))
+    | x :: y :: tail when y.Name.LocalName = "dict" -> parseDict [] (y)
+    | [x] -> parseElement x
+    | [] -> Dict(dict result)
+
+let parseArray (element : XElement) = PList.Array [ Integer 10L ]
+
+let rec parse (results : PList list) (elements : XElement list)  = 
+    match elements with
+    | x :: tail when x.Name.LocalName = "dict" -> parse ((parseDict [] x) :: results) tail
+    | x :: tail when x.Name.LocalName = "array" -> parse ((parseArray x) :: results) tail
+    | x :: tail -> parse((parseElement x) :: results) tail
+    | [ _ ] | [] -> results
+
+
+
+
+
 
 let root = 
     path
     |> loadDocument
     |> getRoot
 
-
-root.Elements()
-|> Seq.iter (fun e ->  e.Name.LocalName |> (printfn "%A"))
-
-let parseElement (element1: XElement, element2: XElement) =
-    match element1.Name.LocalName with
-    | "integer" -> Integer (int(element2.Value))
-    | "string" -> PList.String element2.Value
-    | "date" -> PList.Date (element2.Value |> DateTime.Parse)
-    | "data" -> PList.Data element2.Value
-    | _ -> PList.None
-
-let parseDict (element:XElement) =
-    let values = dict["blue", Integer 40; "red", Integer 700]
-    Dict(values)
-
-let parseArray (element: XElement) =
-    PList.Array [ Integer 10 ]
-
-
-
-let rec parse(element: XElement) (rest: PList list) =
-    let children = element.Elements() |> List.ofSeq
-    match children with
-    | x :: xs when x.Name.LocalName = "dict" -> parseDict x
-    | x :: xs when x.Name.LocalName = "array" -> parseArray x
-    | x :: y :: rest -> parseElement ( x, y)
-    | [_] | [] -> PList.None
+root.Elements() |> List.ofSeq |> parse []

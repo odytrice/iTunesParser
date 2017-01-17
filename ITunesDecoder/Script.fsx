@@ -4,53 +4,56 @@
 #load "Types.fs"
 
 open System.IO
-open ITunesDecoder.Types
 open System.Xml.Linq
 open System
 
-let path = Path.Combine(__SOURCE_DIRECTORY__, "Sample.xml")
+let path = Path.Combine(__SOURCE_DIRECTORY__, "Library.xml")
 
 let loadDocument path = 
     use xml = File.OpenText(path)
     let doc = XDocument.Load(xml)
     doc
 
-let getRoot (doc : XDocument) = doc.Elements() |> Seq.head
-
-let parseElement (element : XElement) = 
-    match element.Name.LocalName with
-    | "integer" -> PList.Integer(int64 (element.Value))
-    | "string" -> PList.String element.Value
-    | "date" -> PList.Date(element.Value |> DateTime.Parse)
-    | "data" -> PList.Data element.Value
-    | n -> failwith (sprintf "Unknown key %s" n)
-
-
-let rec parseDict result (element : XElement) = 
-    let list = element.Elements() |> List.ofSeq
-    match list with
-    | x :: y :: tail when x.Name.LocalName = "key" -> Dict (dict ((x.Value, parseElement (y)) :: result))
-    | x :: y :: tail when y.Name.LocalName = "dict" -> parseDict [] (y)
-    | [x] -> parseElement x
-    | [] -> Dict(dict result)
-
-let parseArray (element : XElement) = PList.Array [ Integer 10L ]
-
-let rec parse (results : PList list) (elements : XElement list)  = 
-    match elements with
-    | x :: tail when x.Name.LocalName = "dict" -> parse ((parseDict [] x) :: results) tail
-    | x :: tail when x.Name.LocalName = "array" -> parse ((parseArray x) :: results) tail
-    | x :: tail -> parse((parseElement x) :: results) tail
-    | [ _ ] | [] -> results
-
-
-
-
-
 
 let root = 
     path
     |> loadDocument
-    |> getRoot
+    |> fun doc -> doc.Elements() |> Seq.head
 
-root.Elements() |> List.ofSeq |> parse []
+type Element = 
+    | Integer of int64
+    | String of string
+    | Date of DateTime
+    | Data of string
+    | Bool of bool
+    | Dict of list<string * Element>
+    | Array of list<Element>
+
+let rec toValue (element : XElement) = 
+    match element.Name.LocalName with
+    | "integer" -> Integer(int64 (element.Value))
+    | "string" -> String element.Value
+    | "date" -> Date(element.Value |> DateTime.Parse)
+    | "data" -> Data element.Value
+    | "true" -> Bool true
+    | "false" -> Bool false
+    | "dict" -> element |> toDict
+    | "array" -> element |> toArray
+    | s -> failwith ("Unknown Value: " + s)
+
+and toDict dictElement = 
+    let rec processPairs result (elements : XElement list) = 
+        match elements with
+        | x :: y :: rest -> processPairs ((x.Value, y |> toValue) :: result) rest
+        | [ _ ] | [] -> result
+    Dict(processPairs [] (dictElement.Elements() |> List.ofSeq))
+
+and toArray arrayElement = 
+    let rec processSeq result (elements : XElement list) = 
+        match elements with
+        | x :: rest -> processSeq ((x |> toValue) :: result) rest
+        | [] -> result
+    Array(processSeq [] (arrayElement.Elements() |> List.ofSeq))
+
+root.Elements() 
+|> Seq.map(fun e -> e |> toValue)

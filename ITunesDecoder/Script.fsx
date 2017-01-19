@@ -1,34 +1,37 @@
 // Learn more about F# at http://fsharp.org. See the 'F# Tutorial' project
 // for more guidance on F# programming.
 #load "Scripts/load-references-debug.fsx"
-#load "Types.fs"
 
 open System.IO
 open System.Xml.Linq
 open System
 
+// string
 let path = Path.Combine(__SOURCE_DIRECTORY__, "Library.xml")
 
+// string -> XDocument
 let loadDocument path = 
     use xml = File.OpenText(path)
     let doc = XDocument.Load(xml)
     doc
 
-
+// XElement
 let root = 
     path
     |> loadDocument
-    |> fun doc -> doc.Elements() |> Seq.head
+    |> fun doc -> doc.Elements() 
+    |> Seq.head
 
-type Element = 
+type Value = 
     | Integer of int64
     | String of string
     | Date of DateTime
     | Data of string
     | Bool of bool
-    | Dict of list<string * Element>
-    | Array of list<Element>
+    | Dict of list<string * Value>
+    | Array of list<Value>
 
+// XElement -> Value
 let rec toValue (element : XElement) = 
     match element.Name.LocalName with
     | "integer" -> Integer(int64 (element.Value))
@@ -41,19 +44,26 @@ let rec toValue (element : XElement) =
     | "array" -> element |> toArray
     | s -> failwith ("Unknown Value: " + s)
 
+// XElement -> Value
 and toDict dictElement = 
+    // (string * Value) list -> XElement list -> (string * Value) list
     let rec processPairs result (elements : XElement list) = 
         match elements with
-        | x :: y :: rest -> processPairs ((x.Value, y |> toValue) :: result) rest
+        | x :: y :: rest -> processPairs ((x.Value, toValue y) :: result) rest
         | [ _ ] | [] -> result
+
     Dict(processPairs [] (dictElement.Elements() |> List.ofSeq))
 
+// XElement -> value
 and toArray arrayElement = 
+    // Value list -> XElement list -> Value list
     let rec processSeq result (elements : XElement list) = 
         match elements with
-        | x :: rest -> processSeq ((x |> toValue) :: result) rest
+        | x :: rest -> processSeq ((toValue x) :: result) rest
         | [] -> result
+
     Array(processSeq [] (arrayElement.Elements() |> List.ofSeq))
 
+// Seq<T>
 root.Elements() 
 |> Seq.map(fun e -> e |> toValue)

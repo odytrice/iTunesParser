@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{19D45FA4-C59A-4645-AF13-ED68D9988AFF}"
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+	EndProjectSection
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ITunesParser", "iTunesParser\ITunesParser.fsproj", "{7D4C38C8-1AA2-4980-9F09-FEF0DFF20F0B}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ITunesParser.Tests", "ITunesParser.Tests\ITunesParser.Tests.fsproj", "{7BB542AA-1E7E-4359-934C-EE2E04458F4C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D4C38C8-1AA2-4980-9F09-FEF0DFF20F0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D4C38C8-1AA2-4980-9F09-FEF0DFF20F0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D4C38C8-1AA2-4980-9F09-FEF0DFF20F0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D4C38C8-1AA2-4980-9F09-FEF0DFF20F0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BB542AA-1E7E-4359-934C-EE2E04458F4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BB542AA-1E7E-4359-934C-EE2E04458F4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BB542AA-1E7E-4359-934C-EE2E04458F4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BB542AA-1E7E-4359-934C-EE2E04458F4C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

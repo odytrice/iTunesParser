@@ -25,7 +25,8 @@ and toDict dictElement =
         | x :: y :: rest -> processPairs ((x.Value, toValue y) :: result) rest
         | [ _ ] | [] -> result
 
-    Dict(processPairs [] (dictElement.Elements() |> List.ofSeq))
+    let seqs = processPairs [] (dictElement.Elements() |> List.ofSeq)
+    Dict(dict seqs)
 
 // XElement -> value
 and toArray arrayElement = 

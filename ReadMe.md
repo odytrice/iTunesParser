@@ -1,4 +1,4 @@
-## ITunes Parser for F# &nbsp;
+# ITunes Parser for F# #
 
 This F# Library has both a PList XML Parser and iTunes XML Parser
 

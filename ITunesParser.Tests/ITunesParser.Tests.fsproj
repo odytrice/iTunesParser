@@ -60,12 +60,12 @@
     <Compile Include="AssemblyInfo.fs" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
-    <Compile Include="Parser.fs" />
+    <Compile Include="ParserTests.fs" />
     <Content Include="App.config" />
-    <None Include="Script.fsx" />
     <Content Include="Sample.xml" />
-    <None Include="paket.references" />
     <Content Include="Library.xml" />
+    <None Include="Script.fsx" />
+    <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
